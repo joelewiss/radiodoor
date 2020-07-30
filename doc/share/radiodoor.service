@@ -1,0 +1,12 @@
+[Unit]
+Description=Radio Door Service
+After=smarthome.service
+
+[Service]
+WorkingDirectory=/home/pi/RadioDoor
+ExecStart=/home/pi/RadioDoor/door.sh
+Type=simple
+User=pi
+
+[Install]
+WantedBy=multi-user.target
