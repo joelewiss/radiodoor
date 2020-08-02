@@ -5,7 +5,7 @@ from http import client as web
 from threading import Timer
 
 # WebHook configuration
-HOST = "localhost"
+HOST = "pi.lewisnet"
 PORT = "80"
 ENDPT = "/action/doors/"
 
@@ -13,15 +13,15 @@ SENSORS = [
     {
         "name":     "front",
         "device":   "55555554985a8ef0b01001d20ac",
-        "closed":   "a900",
-        "opened":   "2900",
+        "closed":   "2900",
+        "opened":   "a900",
     },
 
     {
         "name":     "back",
         "device":   "55555554985a8ef0b01001d20b4",
-        "closed":   "bc80",
-        "opened":   "3c80",
+        "closed":   "3d00",
+        "opened":   "bd00",
     }
 ]
 
@@ -29,13 +29,22 @@ SENSORS = [
 # multiple calls to the API. In reality, with good radio
 # conditions, the door sensors send three different open
 # and close signals each.
-lastMethod = ""
+last = {
+    "front": {
+        "action": "",
+        "time": 0,
+    },
+    "back": {
+        "action": "",
+        "time": 0,
+    },
+}
 def send(sensor, action):
-    global lastMethod
+    global last
 
     print(f"Got call to {sensor} {action}")
 
-    if lastMethod != sensor + action:
+    if (last[sensor]["action"] != action) or (time.time() - last[sensor]["time"] > 35):
         url = "{}{}_{}/".format(ENDPT, sensor, action)
         print(f"Sending to {url}")
         
@@ -43,7 +52,9 @@ def send(sensor, action):
         client.request("GET", url)
         client.close()
 
-    lastMethod = sensor + action
+
+    last[sensor]["action"] = action
+    last[sensor]["time"] = time.time()
 
 
 def analyse(obj):
@@ -56,7 +67,7 @@ def analyse(obj):
             code = data[28:]
             special = code[1:5]
 
-            #print(f"New data!\nLength: {length}")
+            #print(f"\nNew data!\nLength: {length}")
             #print(f"Device ID: {device}")
             #print(f"Codes sent: {code}")
             #print(special)
